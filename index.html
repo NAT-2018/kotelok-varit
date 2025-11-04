@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Котелок Варит - находите рецепты по фото продуктов">
+  <meta name="theme-color" content="#EA580C">
+  <title>Котелок Варит</title>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    body {
+      overscroll-behavior: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React and Babel -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Icon components from Lucide
+    const Camera = () => <i data-lucide="camera"></i>;
+    const Upload = () => <i data-lucide="upload"></i>;
+    const X = () => <i data-lucide="x"></i>;
+    const ChefHat = () => <i data-lucide="chef-hat"></i>;
+    const Loader2 = () => <i data-lucide="loader-2"></i>;
+    const Plus = () => <i data-lucide="plus"></i>;
+    const Trash2 = () => <i data-lucide="trash-2"></i>;
+
+    function App() {
+      const [image, setImage] = useState(null);
+      const [ingredients, setIngredients] = useState([]);
+      const [recipes, setRecipes] = useState([]);
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState('');
+      const [step, setStep] = useState('upload');
+
+      React.useEffect(() => {
+        lucide.createIcons();
+      });
+
+      const handleImageUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setImage(reader.result);
+            analyzeImage(reader.result);
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      const analyzeImage = async (imageData) => {
+        setLoading(true);
+        setError('');
+        
+        try {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          const possibleIngredients = [
+            'Помидоры', 'Огурцы', 'Курица', 'Картофель', 'Лук',
+            'Морковь', 'Яйца', 'Молоко', 'Сыр', 'Масло',
+            'Чеснок', 'Перец', 'Рис', 'Макароны', 'Мука',
+            'Капуста', 'Свёкла', 'Баклажан', 'Кабачок', 'Грибы'
+          ];
+          
+          const detected = possibleIngredients
+            .sort(() => Math.random() - 0.5)
+            .slice(0, Math.floor(Math.random() * 5) + 3);
+          
+          setIngredients(detected.map((ing, idx) => ({ id: idx, name: ing })));
+          setStep('ingredients');
+        } catch (err) {
+          setError('Ошибка при анализе изображения');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const addIngredient = () => {
+        const newIngredient = prompt('Введите название продукта:');
+        if (newIngredient && newIngredient.trim()) {
+          setIngredients([...ingredients, { 
+            id: Date.now(), 
+            name: newIngredient.trim() 
+          }]);
+        }
+      };
+
+      const removeIngredient = (id) => {
+        setIngredients(ingredients.filter(ing => ing.id !== id));
+      };
+
+      const findRecipes = async () => {
+        setLoading(true);
+        setError('');
+        
+        try {
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          
+          const demoRecipes = [
+            {
+              id: 1,
+              title: 'Овощной салат "Свежесть"',
+              time: '15 минут',
+              difficulty: 'Легко',
+              ingredients: ingredients.slice(0, 4).map(i => i.name),
+              description: 'Свежий и полезный салат из сезонных овощей. Идеален для лёгкого ужина или в качестве гарнира.'
+            },
+            {
+              id: 2,
+              title: 'Домашний суп с овощами',
+              time: '45 минут',
+              difficulty: 'Средне',
+              ingredients: ingredients.slice(0, 5).map(i => i.name),
+              description: 'Наваристый домашний суп с овощами. Согреет в холодный день и насытит всю семью.'
+            },
+            {
+              id: 3,
+              title: 'Запечённые овощи в духовке',
+              time: '30 минут',
+              difficulty: 'Легко',
+              ingredients: ingredients.slice(0, 3).map(i => i.name),
+              description: 'Ароматные овощи, запечённые в духовке с травами. Полезно и вкусно!'
+            },
+            {
+              id: 4,
+              title: 'Овощное рагу',
+              time: '40 минут',
+              difficulty: 'Средне',
+              ingredients: ingredients.slice(0, 6).map(i => i.name),
+              description: 'Сытное рагу из овощей. Можно подавать как самостоятельное блюдо или с гарниром.'
+            }
+          ];
+          
+          setRecipes(demoRecipes);
+          setStep('recipes');
+        } catch (err) {
+          setError('Ошибка при поиске рецептов');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const reset = () => {
+        setImage(null);
+        setIngredients([]);
+        setRecipes([]);
+        setStep('upload');
+        setError('');
+      };
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 p-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8 pt-6">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div className="w-12 h-12 text-orange-600">
+                  <ChefHat />
+                </div>
+                <h1 className="text-4xl font-bold text-gray-800">Котелок Варит</h1>
+              </div>
+              <p className="text-gray-600">Сфотографируйте продукты и получите рецепты</p>
+              <p className="text-sm text-orange-600 mt-2">💡 Умная готовка: котелок варит, голова соображает!</p>
+            </div>
+
+            {step === 'upload' && (
+              <div className="bg-white rounded-2xl shadow-lg p-8">
+                {!image ? (
+                  <div className="space-y-4">
+                    <label className="block cursor-pointer">
+                      <div className="border-3 border-dashed border-orange-300 rounded-xl p-12 text-center hover:border-orange-500 hover:bg-orange-50 transition-all">
+                        <div className="w-16 h-16 mx-auto text-orange-400 mb-4">
+                          <Camera />
+                        </div>
+                        <p className="text-lg font-medium text-gray-700 mb-2">Сфотографировать продукты</p>
+                        <p className="text-sm text-gray-500">Нажмите для съёмки или выбора фото</p>
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
+
+                    <label className="block cursor-pointer">
+                      <div className="border-3 border-dashed border-amber-300 rounded-xl p-12 text-center hover:border-amber-500 hover:bg-amber-50 transition-all">
+                        <div className="w-16 h-16 mx-auto text-amber-400 mb-4">
+                          <Upload />
+                        </div>
+                        <p className="text-lg font-medium text-gray-700 mb-2">Загрузить фото из галереи</p>
+                        <p className="text-sm text-gray-500">Выберите готовое изображение</p>
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
+
+                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-sm text-blue-800">
+                        <strong>💡 Как работает:</strong> Загрузите фото продуктов → Котелок распознает ингредиенты → Получите рецепты!
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <img src={image} alt="Загруженное фото" className="w-full rounded-xl shadow-md" />
+                      <button
+                        onClick={reset}
+                        className="absolute top-4 right-4 bg-red-500 text-white p-3 rounded-full hover:bg-red-600 shadow-lg transition-colors"
+                      >
+                        <div className="w-6 h-6">
+                          <X />
+                        </div>
+                      </button>
+                    </div>
+                    {loading && (
+                      <div className="text-center py-8">
+                        <div className="w-12 h-12 mx-auto text-orange-500 animate-spin mb-4">
+                          <Loader2 />
+                        </div>
+                        <p className="text-gray-600 font-medium">Котелок варит... Анализируем продукты!</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {step === 'ingredients' && (
+              <div className="bg-white rounded-2xl shadow-lg p-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Найденные продукты</h2>
+                <p className="text-gray-600 mb-6">Проверьте список и добавьте недостающие</p>
+                
+                <div className="space-y-3 mb-6">
+                  {ingredients.map(ing => (
+                    <div key={ing.id} className="flex items-center justify-between bg-orange-50 p-4 rounded-lg hover:bg-orange-100 transition-colors">
+                      <span className="text-lg text-gray-700">{ing.name}</span>
+                      <button
+                        onClick={() => removeIngredient(ing.id)}
+                        className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <div className="w-5 h-5">
+                          <Trash2 />
+                        </div>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-3 mb-4">
+                  <button
+                    onClick={addIngredient}
+                    className="flex-1 bg-amber-100 text-amber-700 py-3 px-6 rounded-lg font-medium hover:bg-amber-200 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <div className="w-5 h-5">
+                      <Plus />
+                    </div>
+                    Добавить продукт
+                  </button>
+                  <button
+                    onClick={findRecipes}
+                    disabled={ingredients.length === 0 || loading}
+                    className="flex-1 bg-orange-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-5 h-5 animate-spin">
+                          <Loader2 />
+                        </div>
+                        Ищем рецепты...
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-5 h-5">
+                          <ChefHat />
+                        </div>
+                        Варим рецепты!
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <button
+                  onClick={reset}
+                  className="w-full text-gray-500 hover:text-gray-700 py-2 text-sm"
+                >
+                  ← Начать заново
+                </button>
+              </div>
+            )}
+
+            {step === 'recipes' && (
+              <div className="space-y-4">
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-2">🍲 Котелок наварил!</h2>
+                  <p className="text-gray-600 mb-4">Найдено рецептов: <strong>{recipes.length}</strong></p>
+                  <button
+                    onClick={reset}
+                    className="text-orange-600 hover:text-orange-700 font-medium hover:underline"
+                  >
+                    ← Приготовить что-то другое
+                  </button>
+                </div>
+
+                {recipes.map(recipe => (
+                  <div key={recipe.id} className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                    <h3 className="text-xl font-bold text-gray-800 mb-3">{recipe.title}</h3>
+                    <div className="flex gap-4 text-sm text-gray-600 mb-3">
+                      <span>⏱️ {recipe.time}</span>
+                      <span>📊 {recipe.difficulty}</span>
+                      <span>🍽️ {recipe.ingredients.length} ингредиентов</span>
+                    </div>
+                    <p className="text-gray-700 mb-4 leading-relaxed">{recipe.description}</p>
+                    <div className="border-t pt-4">
+                      <p className="text-sm font-medium text-gray-700 mb-2">Используемые продукты:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {recipe.ingredients.map((ing, idx) => (
+                          <span key={idx} className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-medium">
+                            {ing}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <div className="bg-gradient-to-r from-orange-100 to-amber-100 rounded-2xl p-6 text-center">
+                  <p className="text-gray-700 mb-2">💡 <strong>Совет:</strong> Это демо-версия приложения</p>
+                  <p className="text-sm text-gray-600">В полной версии будет настоящее распознавание продуктов и тысячи рецептов!</p>
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+                ⚠️ {error}
+              </div>
+            )}
+
+            <footer className="text-center mt-8 pb-6">
+              <p className="text-gray-500 text-sm">
+                Котелок Варит © 2024 | PWA-приложение
+              </p>
+            </footer>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+
+    // Initialize Lucide icons after render
+    setTimeout(() => {
+      lucide.createIcons();
+    }, 100);
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => console.log('Service Worker зарегистрирован'))
+          .catch(err => console.log('Ошибка Service Worker:', err));
+      });
+    }
+  </script>
+</body>
+</html>
