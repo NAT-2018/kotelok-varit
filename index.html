@@ -97,7 +97,7 @@
     }
 
     async function getRecipes(ingredients) {
-      const apiKey = '832d7bb90110544c943ecc692fae2aad5'; // Твой новый ключ — удали после теста!
+      const apiKey = '832d7b901105446c943ec692fae2aad5'; // Твой новый ключ — удали после теста!
       const url = `https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=3&ranking=2&apiKey=${apiKey}`;
       const response = await fetch(url);
       if (!response.ok) {
