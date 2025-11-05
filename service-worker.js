@@ -1,8 +1,8 @@
-const CACHE_NAME = 'kotelek-varit-v1';
+const CACHE_NAME = 'kotelok-varit-v1';
 const urlsToCache = [
-  '/kotelek-varit/',
-  '/kotelek-varit/index.html',
-  '/kotelek-varit/manifest.json',
+  '/kotelok-varit/',
+  '/kotelok-varit/index.html',
+  '/kotelok-varit/manifest.json',
   'https://cdn.tailwindcss.com',
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
@@ -75,7 +75,7 @@ self.addEventListener('fetch', event => {
           })
           .catch(() => {
             // Если офлайн и нет в кэше, показываем базовую страницу
-            return caches.match('/kotelek-varit/index.html');
+            return caches.match('/kotelok-varit/index.html');
           });
       })
   );
