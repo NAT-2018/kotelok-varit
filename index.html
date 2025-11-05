@@ -119,7 +119,7 @@
 
     // Функция для Spoonacular API (твой ключ вставлен)
     async function getRecipes(ingredients) {
-      const apiKey = 'be91e1480d24206bbf771ee4blabe'; // ТВОЙ КЛЮЧ — УДАЛИ ИЗ КОДА ПОСЛЕ ТЕСТА!
+      const apiKey = '832d7b901105446c943ec692fae2aad5'; // ТВОЙ КЛЮЧ — УДАЛИ ИЗ КОДА ПОСЛЕ ТЕСТА!
       const url = `https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=3&ranking=2&apiKey=${apiKey}`;
       const response = await fetch(url);
       if (!response.ok) {
