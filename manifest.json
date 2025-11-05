@@ -1,22 +1,22 @@
- {
-  "name": "Котелок Варит",
+{
+  "name": "Котелок варит",
   "short_name": "Котелок",
-  "description": "Умное приложение для поиска рецептов по фото продуктов. Котелок варит - голова соображает!",
-  "start_url": "/kotelok-varit/",
-  "scope": "/kotelok-varit/",
+  "description": "Умное приложение для поиска рецептов по фото",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#FFF7ED",
-  "theme_color": "#EA580C",
+  "background_color": "#FFFFFF",
+  "theme_color": "#E5A30C",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://em-content.zobj.net/source/apple/391/cooking_1f373.png",
+      "src": "https://em-content.zobj.net/source/apple/391/cooking_160x160.png",
       "sizes": "160x160",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://em-content.zobj.net/source/apple/391/cooking_1f373.png",
+      "src": "https://em-content.zobj.net/source/apple/391/cooking_160x160.png",
       "sizes": "160x160",
       "type": "image/png",
       "purpose": "maskable"
