@@ -102,7 +102,7 @@
 
     // Edamam: Поиск рецептов
     async function getRecipesEdamam(ingredients) {
-      if (appIdEdamam === '8d4fd98c' || appKeyEdamam === '6fe04d68261acb8b799dbd091ca9f581') throw new Error('Вставь ключи Edamam');
+      if (appIdEdamam === 'ТВОЙ_APP_ID' || appKeyEdamam === 'ТВОЙ_APP_KEY') throw new Error('Вставь ключи Edamam');
       const url = `https://api.edamam.com/search?q=${encodeURIComponent(ingredients)}&app_id=${appIdEdamam}&app_key=${appKeyEdamam}&language=ru&to=3`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Edamam failed');
