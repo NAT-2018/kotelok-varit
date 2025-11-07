@@ -15,6 +15,7 @@
     button:hover { background: #d4930a; }
     .recipe { border: 1px solid #eee; padding: 10px; margin: 10px 0; border-radius: 5px; }
     .recipe img { width: 100px; height: auto; }
+    a { color: #E5A30C; text-decoration: none; }
   </style>
 </head>
 <body>
@@ -31,19 +32,23 @@
     const preview = document.getElementById('preview');
     const results = document.getElementById('results');
 
-    // Fallback ингредиенты (по имени файла или рандом)
+    // Вставь ключи Edamam здесь!
+    const appIdEdamam = 'ТВОЙ_APP_ID'; // Из My Apps
+    const appKeyEdamam = 'ТВОЙ_APP_KEY';
+
+    // Fallback ингредиенты
     const fallbackIngredients = ['apple', 'chicken', 'carrot', 'potato', 'tomato', 'cabbage'];
 
-    // Fallback рецепты (если API упадёт)
+    // Fallback рецепты
     const fallbackRecipes = {
-      'carrot': [{title: 'Морковный салат', usedIngredients: [{name: 'carrot'}], readyInMinutes: 5, image: 'https://via.placeholder.com/100?text=Салат'}],
-      'cabbage': [{title: 'Капустный салат', usedIngredients: [{name: 'cabbage'}], readyInMinutes: 10, image: 'https://via.placeholder.com/100?text=Салат'}],
-      'vegetable': [{title: 'Овощной суп', usedIngredients: [{name: 'vegetable'}], readyInMinutes: 20, image: 'https://via.placeholder.com/100?text=Суп'}]
+      'carrot': [{title: 'Морковный салат', usedIngredients: [{name: 'carrot'}], readyInMinutes: 5, image: 'https://via.placeholder.com/100?text=Салат', calories: '50'}],
+      'cabbage': [{title: 'Салат из капусты', usedIngredients: [{name: 'cabbage'}], readyInMinutes: 10, image: 'https://via.placeholder.com/100?text=Салат', calories: '30'}],
+      'vegetable': [{title: 'Овощной суп', usedIngredients: [{name: 'vegetable'}], readyInMinutes: 20, image: 'https://via.placeholder.com/100?text=Суп', calories: '150'}]
     };
 
     photoInput.addEventListener('change', (e) => {
       preview.innerHTML = '';
-      const files = Array.from(e.target.files).slice(0, 3); // Лимит 3
+      const files = Array.from(e.target.files).slice(0, 3);
       files.forEach((file, index) => {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -57,7 +62,7 @@
     });
 
     async function processPhotos() {
-      results.innerHTML = '<h2>Распознано и рецепты:</h2><p>Обработка... (быстро, без модели)</p>';
+      results.innerHTML = '<h2>Распознано и рецепты:</h2><p>Обработка...</p>';
       const files = Array.from(photoInput.files).slice(0, 3);
       if (files.length === 0) { alert('Выбери фото!'); return; }
 
@@ -68,23 +73,22 @@
         const fileName = file.name.toLowerCase();
         let fallback = fallbackIngredients[Math.floor(Math.random() * fallbackIngredients.length)];
 
-        // Умный fallback по имени файла
-        if (fileName.includes('kapust') || fileName.includes('cabbage') || fileName.includes('lettuce')) fallback = 'cabbage';
+        // Fallback по имени файла
+        if (fileName.includes('kapust') || fileName.includes('cabbage')) fallback = 'cabbage';
         else if (fileName.includes('morkov') || fileName.includes('carrot')) fallback = 'carrot';
-        else if (fileName.includes('apple') || fileName.includes('yabloko')) fallback = 'apple';
-        else if (fileName.includes('chicken') || fileName.includes('kurica')) fallback = 'chicken';
-        // Добавь больше по вкусу (tomato = 'tomato' etc.)
+        else if (fileName.includes('yablok') || fileName.includes('apple')) fallback = 'apple';
+        // Добавь больше
 
         ingredients = [fallback];
         allIngredients.push(...ingredients);
         results.innerHTML += `<p><strong>Фото ${i+1} (${file.name}):</strong> ${ingredients.join(', ')}</p>`;
       }
 
-      const uniqueIngs = [...new Set(allIngredients)].join(',');
+      const uniqueIngs = [...new Set(allIngredients)].join(' ');
       results.innerHTML += `<p>Ищу рецепты для: ${uniqueIngs}</p>`;
 
       try {
-        const recipes = await getRecipes(uniqueIngs);
+        const recipes = await getRecipesEdamam(uniqueIngs);
         displayRecipes(recipes);
       } catch (err) {
         results.innerHTML += `<p style="color: red;">Ошибка API: ${err.message}. Запасные рецепты.</p>`;
@@ -96,14 +100,21 @@
       }
     }
 
-    async function getRecipes(ingredients) {
-      const apiKey = '832d7b901105446c943ec692fae2aad5'; // Твой новый ключ — удали после теста!
-      const url = `https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=3&ranking=2&apiKey=${apiKey}`;
+    // Edamam: Поиск рецептов
+    async function getRecipesEdamam(ingredients) {
+      if (appIdEdamam === '8d4fd98c' || appKeyEdamam === '6fe04d68261acb8b799dbd091ca9f581') throw new Error('Вставь ключи Edamam');
+      const url = `https://api.edamam.com/search?q=${encodeURIComponent(ingredients)}&app_id=${appIdEdamam}&app_key=${appKeyEdamam}&language=ru&to=3`;
       const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      return await response.json();
+      if (!response.ok) throw new Error('Edamam failed');
+      const data = await response.json();
+      return data.hits.map(hit => ({
+        title: hit.recipe.label,
+        image: hit.recipe.image,
+        usedIngredients: hit.recipe.ingredients.slice(0, 3).map(ing => ({name: ing.text})),
+        readyInMinutes: Math.round(hit.recipe.totalTime),
+        calories: Math.round(hit.recipe.calories),
+        id: hit.recipe.uri.split('_').pop()
+      }));
     }
 
     function displayRecipes(recipes) {
@@ -112,10 +123,10 @@
         html += `
           <div class="recipe">
             <h4>${recipe.title || 'Запасной рецепт'}</h4>
-            <img src="${recipe.image || 'https://via.placeholder.com/100?text=Рецепт'}" alt="${recipe.title || 'Рецепт'}" onerror="this.src='https://via.placeholder.com/100?text=Фото'">
-            <p><strong>Использовано:</strong> ${recipe.usedIngredients ? recipe.usedIngredients.map(ing => ing.name).join(', ') : 'Ингредиенты из фото'}</p>
-            <p><strong>Время:</strong> ${recipe.readyInMinutes || 15} мин</p>
-            <a href="${recipe.id ? `https://spoonacular.com/recipes/${recipe.id}` : '#'}" target="_blank">Подробнее</a>
+            <img src="${recipe.image || 'https://via.placeholder.com/100?text=Рецепт'}" alt="${recipe.title}" onerror="this.src='https://via.placeholder.com/100?text=Фото'">
+            <p><strong>Ингредиенты:</strong> ${recipe.usedIngredients ? recipe.usedIngredients.map(ing => ing.name).join(', ') : 'Из фото'}</p>
+            <p><strong>Время:</strong> ${recipe.readyInMinutes || 15} мин | <strong>Калории:</strong> ${recipe.calories || 'N/A'}</p>
+            <a href="https://www.edamam.com/recipe/${recipe.id || '#'}" target="_blank">Подробнее</a>
           </div>
         `;
       });
