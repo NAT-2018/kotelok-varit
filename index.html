@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -32,9 +32,9 @@
     const preview = document.getElementById('preview');
     const results = document.getElementById('results');
 
-    // Вставь ключи Edamam здесь!
-    const appIdEdamam = '8d4fd98c'; // Из My Apps
-    const appKeyEdamam = '6fe04d68261acb8b799dbd091ca9f581';
+    // Твои ключи Edamam
+    const appIdEdamam = '8d4fd98c';
+    const appKeyEdamam = '0a91f1417542ef54f8c2608b6e4f4856'; // Удали после теста!
 
     // Fallback ингредиенты
     const fallbackIngredients = ['apple', 'chicken', 'carrot', 'potato', 'tomato', 'cabbage'];
@@ -102,7 +102,6 @@
 
     // Edamam: Поиск рецептов
     async function getRecipesEdamam(ingredients) {
-      if (appIdEdamam === 'ТВОЙ_APP_ID' || appKeyEdamam === 'ТВОЙ_APP_KEY') throw new Error('Вставь ключи Edamam');
       const url = `https://api.edamam.com/search?q=${encodeURIComponent(ingredients)}&app_id=${appIdEdamam}&app_key=${appKeyEdamam}&language=ru&to=3`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Edamam failed');
